@@ -1,6 +1,6 @@
 import { Controller, Get, UseGuards } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { JwtAuthGuard } from '../../modules/immich-jwt/guards/jwt-auth.guard';
+import { ImmichAuthGuard } from '../../modules/immich-auth/guards/immich-auth.guard';
 import { ServerInfoService } from './server-info.service';
 import { serverVersion } from '../../constants/server_version.constant';
 
@@ -20,7 +20,7 @@ export class ServerInfoController {
     };
   }
 
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(ImmichAuthGuard)
   @Get('/mapbox')
   async getMapboxInfo() {
     return {

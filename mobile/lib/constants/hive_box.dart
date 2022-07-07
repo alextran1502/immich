@@ -1,9 +1,12 @@
 // Access token
 const String userInfoBox = "immichBoxUserInfo"; // Box
 const String accessTokenKey = "immichBoxAccessTokenKey"; // Key 1
-const String deviceIdKey = 'immichBoxDeviceIdKey'; // Key 2
-const String isLoggedInKey = 'immichIsLoggedInKey'; // Key 3
-const String serverEndpointKey = 'immichBoxServerEndpoint'; // Key 4
+const String refreshTokenKey = "immichBoxRefreshTokenKey"; // Key 2
+const String oauth2IssuerKey = "immichBoxOAuth2IssuerKey"; // Key 3
+const String oauth2ClientIdKey = "immichBoxOAuth2ClientIdKey"; // Key 4
+const String deviceIdKey = 'immichBoxDeviceIdKey'; // Key 5
+const String isLoggedInKey = 'immichIsLoggedInKey'; // Key 6
+const String serverEndpointKey = 'immichBoxServerEndpoint'; // Key 7
 
 // Login Info
 const String hiveLoginInfoBox = "immichLoginInfoBox"; // Box

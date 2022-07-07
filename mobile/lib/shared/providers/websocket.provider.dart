@@ -9,6 +9,9 @@ import 'package:immich_mobile/shared/models/immich_asset.model.dart';
 import 'package:immich_mobile/shared/providers/asset.provider.dart';
 import 'package:socket_io_client/socket_io_client.dart';
 
+import '../models/ws_token_response.model.dart';
+import '../services/network.service.dart';
+
 class WebscoketState {
   final Socket? socket;
   final bool isConnected;
@@ -46,6 +49,9 @@ class WebscoketState {
 }
 
 class WebsocketNotifier extends StateNotifier<WebscoketState> {
+
+  final NetworkService _networkService = NetworkService();
+
   WebsocketNotifier(this.ref)
       : super(WebscoketState(socket: null, isConnected: false)) {
     debugPrint("Init websocket instance");
@@ -53,25 +59,30 @@ class WebsocketNotifier extends StateNotifier<WebscoketState> {
 
   final Ref ref;
 
-  connect() {
+  connect() async {
     var authenticationState = ref.read(authenticationProvider);
 
     if (authenticationState.isAuthenticated) {
-      var accessToken = Hive.box(userInfoBox).get(accessTokenKey);
+
+      var wsAccessToken = await getWsToken();
       var endpoint = Hive.box(userInfoBox).get(serverEndpointKey);
+
       try {
         debugPrint("[WEBSOCKET] Attempting to connect to ws");
+
+        var wsUri = Uri.parse(endpoint + '/socket.io');
+
         // Configure socket transports must be sepecified
         Socket socket = io(
-          endpoint.toString().replaceAll('/api', ''),
+          wsUri.origin,
           OptionBuilder()
-              .setPath('/api/socket.io')
+              .setPath(wsUri.path)
               .setTransports(['websocket'])
               .enableReconnection()
               .enableForceNew()
               .enableForceNewConnection()
               .enableAutoConnect()
-              .setExtraHeaders({"Authorization": "Bearer $accessToken"})
+              .setExtraHeaders({"Authorization": "Bearer $wsAccessToken"})
               .build(),
         );
 
@@ -122,6 +133,19 @@ class WebsocketNotifier extends StateNotifier<WebscoketState> {
       ImmichAsset newAsset = ImmichAsset.fromMap(jsonString);
       ref.watch(assetProvider.notifier).onNewAssetUploaded(newAsset);
     });
+  }
+
+  getWsToken() async {
+    var res = await _networkService.postRequest(url: "auth/wsToken");
+    try {
+      Map<String, dynamic> decodedData = jsonDecode(res.toString());
+
+      WsTokenResponse result = WsTokenResponse.fromMap(decodedData);
+      return result.wsToken;
+    } catch (e) {
+      debugPrint("Error wsToken  ${e.toString()}");
+    }
+    return null;
   }
 }
 

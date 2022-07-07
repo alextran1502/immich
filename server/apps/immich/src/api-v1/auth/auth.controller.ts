@@ -1,6 +1,6 @@
-import { Body, Controller, Post, UseGuards, ValidationPipe } from '@nestjs/common';
+import {Body, Controller, Get, Post, UseGuards, ValidationPipe} from '@nestjs/common';
 import { AuthUserDto, GetAuthUser } from '../../decorators/auth-user.decorator';
-import { JwtAuthGuard } from '../../modules/immich-jwt/guards/jwt-auth.guard';
+import { ImmichAuthGuard } from '../../modules/immich-auth/guards/immich-auth.guard';
 import { AuthService } from './auth.service';
 import { LoginCredentialDto } from './dto/login-credential.dto';
 import { SignUpDto } from './dto/sign-up.dto';
@@ -19,7 +19,7 @@ export class AuthController {
     return await this.authService.adminSignUp(signUpCrendential);
   }
 
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(ImmichAuthGuard)
   @Post('/validateToken')
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   async validateToken(@GetAuthUser() authUser: AuthUserDto) {
@@ -27,4 +27,16 @@ export class AuthController {
       authStatus: true,
     };
   }
+
+  @UseGuards(ImmichAuthGuard)
+  @Post('/wsToken')
+  async getWsToken(@GetAuthUser() authUser: AuthUserDto) {
+    return await this.authService.getWsToken(authUser.id);
+  }
+
+  @Get('/loginParams')
+  async loginParams() {
+    return await this.authService.loginParams();
+  }
+
 }

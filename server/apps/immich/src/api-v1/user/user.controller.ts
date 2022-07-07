@@ -13,7 +13,7 @@ import {
   Response,
 } from '@nestjs/common';
 import { UserService } from './user.service';
-import { JwtAuthGuard } from '../../modules/immich-jwt/guards/jwt-auth.guard';
+import { ImmichAuthGuard } from '../../modules/immich-auth/guards/immich-auth.guard';
 import { AuthUserDto, GetAuthUser } from '../../decorators/auth-user.decorator';
 import { CreateUserDto } from './dto/create-user.dto';
 import { AdminRolesGuard } from '../../middlewares/admin-role-guard.middleware';
@@ -26,20 +26,20 @@ import { Response as Res } from 'express';
 export class UserController {
   constructor(private readonly userService: UserService) {}
 
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(ImmichAuthGuard)
   @Get()
   async getAllUsers(@GetAuthUser() authUser: AuthUserDto, @Query('isAll') isAll: boolean) {
     return await this.userService.getAllUsers(authUser, isAll);
   }
 
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(ImmichAuthGuard)
   @Get('me')
   async getUserInfo(@GetAuthUser() authUser: AuthUserDto) {
     return await this.userService.getUserInfo(authUser);
   }
 
-  @UseGuards(JwtAuthGuard)
   @UseGuards(AdminRolesGuard)
+  @UseGuards(ImmichAuthGuard)
   @Post()
   async createNewUser(@Body(ValidationPipe) createUserDto: CreateUserDto) {
     return await this.userService.createUser(createUserDto);
@@ -50,13 +50,13 @@ export class UserController {
     return await this.userService.getUserCount(isAdmin);
   }
 
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(ImmichAuthGuard)
   @Put()
   async updateUser(@Body(ValidationPipe) updateUserDto: UpdateUserDto) {
     return await this.userService.updateUser(updateUserDto);
   }
 
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(ImmichAuthGuard)
   @UseInterceptors(FileInterceptor('file', profileImageUploadOption))
   @Post('/profile-image')
   async createProfileImage(@GetAuthUser() authUser: AuthUserDto, @UploadedFile() fileInfo: Express.Multer.File) {

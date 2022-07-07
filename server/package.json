@@ -26,6 +26,7 @@
   },
   "dependencies": {
     "@mapbox/mapbox-sdk": "^0.13.3",
+    "@nestjs/axios": "^0.0.7",
     "@nestjs/bull": "^0.5.5",
     "@nestjs/common": "^8.4.7",
     "@nestjs/config": "^2.1.0",

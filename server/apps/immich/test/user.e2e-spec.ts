@@ -5,9 +5,9 @@ import request from 'supertest';
 import { clearDb, authCustom } from './test-utils';
 import { databaseConfig } from '@app/database/config/database.config';
 import { UserModule } from '../src/api-v1/user/user.module';
-import { ImmichJwtModule } from '../src/modules/immich-jwt/immich-jwt.module';
 import { UserService } from '../src/api-v1/user/user.service';
 import { CreateUserDto } from '../src/api-v1/user/dto/create-user.dto';
+import {ImmichAuthModule} from "../src/modules/immich-auth/immich-auth.module";
 import { UserResponseDto } from '../src/api-v1/user/response-dto/user-response.dto';
 
 function _createUser(userService: UserService, data: CreateUserDto) {
@@ -25,7 +25,7 @@ describe('User', () => {
   describe('without auth', () => {
     beforeAll(async () => {
       const moduleFixture: TestingModule = await Test.createTestingModule({
-        imports: [UserModule, ImmichJwtModule, TypeOrmModule.forRoot(databaseConfig)],
+        imports: [UserModule, ImmichAuthModule, TypeOrmModule.forRoot(databaseConfig)],
       }).compile();
 
       app = moduleFixture.createNestApplication();
@@ -100,6 +100,7 @@ describe('User', () => {
               isAdmin: false,
               shouldChangePassword: true,
               profileImagePath: '',
+              isLocalUser: true,
             },
             {
               email: userTwoEmail,
@@ -110,6 +111,7 @@ describe('User', () => {
               isAdmin: false,
               shouldChangePassword: true,
               profileImagePath: '',
+              isLocalUser: true,
             },
           ]),
         );

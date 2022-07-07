@@ -1,4 +1,4 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import {Injectable, Logger, UnauthorizedException} from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 import { InjectRepository } from '@nestjs/typeorm';
 import { ExtractJwt, Strategy } from 'passport-jwt';
@@ -21,13 +21,16 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
   }
 
   async validate(payload: JwtPayloadDto) {
+    Logger.verbose('Trying to validate JWT token', 'JWT STRATEGY');
+
     const { userId } = payload;
     const user = await this.usersRepository.findOne({ where: { id: userId } });
 
-    if (!user) {
+    if (!user || !user.isLocalUser) {
       throw new UnauthorizedException('Failure to validate JWT payload');
     }
 
+    Logger.verbose(`Validated user with email ${user.email}`, "JWT STRATEGY");
     return user;
   }
 }

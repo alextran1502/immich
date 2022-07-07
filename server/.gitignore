@@ -39,3 +39,5 @@ dist/
 upload/
 tmp/
 core
+
+ormconfig.json

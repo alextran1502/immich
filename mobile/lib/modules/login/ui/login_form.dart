@@ -86,11 +86,24 @@ class LoginForm extends HookConsumerWidget {
                   }
                 },
               ),
-              LoginButton(
-                emailController: usernameController,
-                passwordController: passwordController,
-                serverEndpointController: serverEndpointController,
-                isSavedLoginInfo: isSaveLoginInfo.value,
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  LoginButton(
+                    emailController: usernameController,
+                    passwordController: passwordController,
+                    serverEndpointController: serverEndpointController,
+                    isSavedLoginInfo: isSaveLoginInfo.value,
+                    oauth2Login: false,
+                  ),
+                  LoginButton(
+                    emailController: usernameController,
+                    passwordController: passwordController,
+                    serverEndpointController: serverEndpointController,
+                    isSavedLoginInfo: isSaveLoginInfo.value,
+                    oauth2Login: true,
+                  ),
+                ],
               ),
             ],
           ),
@@ -181,6 +194,7 @@ class LoginButton extends ConsumerWidget {
   final TextEditingController passwordController;
   final TextEditingController serverEndpointController;
   final bool isSavedLoginInfo;
+  final bool oauth2Login;
 
   const LoginButton({
     Key? key,
@@ -188,6 +202,7 @@ class LoginButton extends ConsumerWidget {
     required this.passwordController,
     required this.serverEndpointController,
     required this.isSavedLoginInfo,
+    required this.oauth2Login,
   }) : super(key: key);
 
   @override
@@ -207,7 +222,7 @@ class LoginButton extends ConsumerWidget {
           var isAuthenticated = await ref
               .watch(authenticationProvider.notifier)
               .login(emailController.text, passwordController.text,
-                  serverEndpointController.text, isSavedLoginInfo);
+                  serverEndpointController.text, isSavedLoginInfo, oauth2Login);
 
           if (isAuthenticated) {
             // Resume backup (if enable) then navigate
@@ -223,14 +238,15 @@ class LoginButton extends ConsumerWidget {
             ImmichToast.show(
               context: context,
               msg:
-                  "Error logging you in, check server url, email and password!",
+                oauth2Login ? "Error logging you in, check url and make sure OAuth2 is enabled"
+                  : "Error logging you in, check server url, email and password!",
               toastType: ToastType.error,
             );
           }
         },
-        child: const Text(
-          "Login",
-          style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+        child: Text(
+          oauth2Login ? "OAuth2 Login" : "Login",
+          style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
         ));
   }
 }

@@ -4,9 +4,9 @@ import 'dart:convert';
 import 'package:dio/dio.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:hive/hive.dart';
-import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/hive_box.dart';
 import 'package:immich_mobile/utils/dio_http_interceptor.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 final networkServiceProvider = Provider((_) => NetworkService());
 
@@ -35,8 +35,8 @@ class NetworkService {
 
   Future<dynamic> getRequest(
       {required String url,
-      bool isByteResponse = false,
-      bool isStreamReponse = false}) async {
+        bool isByteResponse = false,
+        bool isStreamReponse = false}) async {
     try {
       var savedEndpoint = Hive.box(userInfoBox).get(serverEndpointKey);
 

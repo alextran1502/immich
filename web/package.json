@@ -4,6 +4,7 @@
 	"scripts": {
 		"dev": "svelte-kit dev --host 0.0.0.0",
 		"build": "svelte-kit build",
+		"start": "node ./build/index.js",
 		"package": "svelte-kit package",
 		"preview": "svelte-kit preview",
 		"prepare": "svelte-kit sync",
@@ -42,6 +43,7 @@
 	},
 	"type": "module",
 	"dependencies": {
+		"@openid/appauth": "^1.3.1",
 		"axios": "^0.27.2",
 		"cookie": "^0.4.2",
 		"exifr": "^7.1.3",

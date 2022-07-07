@@ -37,6 +37,7 @@ dependencies:
   flutter_swipe_detector: ^2.0.0
   equatable: ^2.0.3
   image_picker: ^0.8.5+3
+  flutter_appauth: ^4.0.1
   url_launcher: ^6.1.3
   http: 0.13.4
   cancellation_token_http: ^1.1.0

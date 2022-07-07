@@ -193,7 +193,9 @@ export class AlbumRepository implements IAlbumRepository {
     // TODO: should probably do a single delete query?
     for (const assetId of removeAssetsDto.assetIds) {
       const res = await this.assetAlbumRepository.delete({ albumId: album.id, assetId: assetId });
-      if (res.affected == 1) deleteAssetCount++;
+      if (res.affected == 1) {
+        deleteAssetCount++;
+      }
     }
 
     // TODO: No need to return boolean if using a singe delete query

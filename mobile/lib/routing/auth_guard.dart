@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:auto_route/auto_route.dart';
+import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/shared/services/network.service.dart';
 
 class AuthGuard extends AutoRouteGuard {
@@ -15,7 +16,8 @@ class AuthGuard extends AutoRouteGuard {
         resolver.next(true);
       }
     } catch (e) {
-      router.removeUntil((route) => route.name == "LoginRoute");
+      router.popUntilRoot();
+      router.push(const LoginRoute());
     }
   }
 }

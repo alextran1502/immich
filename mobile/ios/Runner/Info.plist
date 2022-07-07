@@ -58,7 +58,7 @@
       <string>UIInterfaceOrientationPortrait</string>
       <string>UIInterfaceOrientationLandscapeLeft</string>
       <string>UIInterfaceOrientationLandscapeRight</string>
-  </array>
+    </array>
     <key>UISupportedInterfaceOrientations~ipad</key>
     <array>
       <string>UIInterfaceOrientationPortrait</string>
@@ -76,8 +76,17 @@
     <false />
     <key>CADisableMinimumFrameDurationOnPhone</key>
     <true />
-
-
+    <key>CFBundleURLTypes</key>
+    <array>
+      <dict>
+        <key>CFBundleTypeRole</key>
+        <string>Editor</string>
+        <key>CFBundleURLSchemes</key>
+        <array>
+          <string>app.alextran.immich</string>
+        </array>
+      </dict>
+    </array>
     <key>LSApplicationQueriesSchemes</key>
     <array>
       <string>https</string>

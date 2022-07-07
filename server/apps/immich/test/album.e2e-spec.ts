@@ -6,10 +6,10 @@ import { clearDb, getAuthUser, authCustom } from './test-utils';
 import { databaseConfig } from '@app/database/config/database.config';
 import { AlbumModule } from '../src/api-v1/album/album.module';
 import { CreateAlbumDto } from '../src/api-v1/album/dto/create-album.dto';
-import { ImmichJwtModule } from '../src/modules/immich-jwt/immich-jwt.module';
 import { AuthUserDto } from '../src/decorators/auth-user.decorator';
 import { UserService } from '../src/api-v1/user/user.service';
 import { UserModule } from '../src/api-v1/user/user.module';
+import {ImmichAuthModule} from "../src/modules/immich-auth/immich-auth.module";
 
 function _createAlbum(app: INestApplication, data: CreateAlbumDto) {
   return request(app.getHttpServer()).post('/album').send(data);
@@ -26,7 +26,7 @@ describe('Album', () => {
   describe('without auth', () => {
     beforeAll(async () => {
       const moduleFixture: TestingModule = await Test.createTestingModule({
-        imports: [AlbumModule, ImmichJwtModule, TypeOrmModule.forRoot(databaseConfig)],
+        imports: [AlbumModule, ImmichAuthModule, TypeOrmModule.forRoot(databaseConfig)],
       }).compile();
 
       app = moduleFixture.createNestApplication();

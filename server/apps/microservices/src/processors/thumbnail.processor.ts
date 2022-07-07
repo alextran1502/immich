@@ -68,6 +68,7 @@ export class ThumbnailGeneratorProcessor {
             );
             await this.metadataExtractionQueue.add(imageTaggingProcessorName, { asset }, { jobId: randomUUID() });
             await this.metadataExtractionQueue.add(objectDetectionProcessorName, { asset }, { jobId: randomUUID() });
+            Logger.verbose("Emit upload success", "WEBSOCKET");
             this.wsCommunicateionGateway.server.to(asset.userId).emit('on_upload_success', JSON.stringify(asset));
           }
         });

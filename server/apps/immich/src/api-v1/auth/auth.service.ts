@@ -1,106 +1,79 @@
-import { BadRequestException, Injectable, InternalServerErrorException, Logger } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import {
+  BadRequestException,
+  Injectable,
+  InternalServerErrorException,
+  Logger,
+} from '@nestjs/common';
+import {InjectRepository} from '@nestjs/typeorm';
+import {Repository} from 'typeorm';
 import { UserEntity } from '@app/database/entities/user.entity';
-import { LoginCredentialDto } from './dto/login-credential.dto';
-import { ImmichJwtService } from '../../modules/immich-jwt/immich-jwt.service';
-import { JwtPayloadDto } from './dto/jwt-payload.dto';
-import { SignUpDto } from './dto/sign-up.dto';
-import * as bcrypt from 'bcrypt';
-import { mapUser, UserResponseDto } from '../user/response-dto/user-response.dto';
+import {LoginCredentialDto} from './dto/login-credential.dto';
+import {ImmichJwtService} from '../../modules/immich-auth/immich-jwt.service';
+import {SignUpDto} from './dto/sign-up.dto';
+import {AuthUserDto} from "../../decorators/auth-user.decorator";
+import { ConfigService } from '@nestjs/config';
+import {ImmichAuthService} from "../../modules/immich-auth/immich-auth.service";
+import {mapUser, UserResponseDto} from "../user/response-dto/user-response.dto";
+
 
 @Injectable()
 export class AuthService {
+
   constructor(
-    @InjectRepository(UserEntity)
-    private userRepository: Repository<UserEntity>,
-    private immichJwtService: ImmichJwtService,
+      @InjectRepository(UserEntity)
+      private userRepository: Repository<UserEntity>,
+      private immichAuthService: ImmichAuthService,
+      private immichJwtService: ImmichJwtService,
+      private configService: ConfigService,
   ) {}
 
-  private async validateUser(loginCredential: LoginCredentialDto): Promise<UserEntity | null> {
-    const user = await this.userRepository.findOne({
-      where: {
-        email: loginCredential.email,
-      },
-      select: [
-        'id',
-        'email',
-        'password',
-        'salt',
-        'firstName',
-        'lastName',
-        'isAdmin',
-        'profileImagePath',
-        'shouldChangePassword',
-      ],
-    });
+  public async loginParams() {
+    const params = {
+      localAuth: true,
+      oauth2: false,
+      issuer: '',
+      clientId: '',
+    };
 
-    if (!user) {
-      return null;
+    if (this.configService.get<boolean>('OAUTH2_ENABLE') === true) {
+      params.oauth2 = true;
+      params.issuer =  this.configService.getOrThrow<string>('OAUTH2_ISSUER');
+      params.clientId = this.configService.getOrThrow<string>('OAUTH2_CLIENT_ID');
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    const isAuthenticated = await this.validatePassword(user.password!, loginCredential.password, user.salt!);
-
-    if (isAuthenticated) {
-      return user;
+    if (this.configService.get<boolean>('LOCAL_USERS_DISABLE') === true) {
+      params.localAuth = false;
     }
 
-    return null;
+    return params;
+
   }
 
-  public async login(loginCredential: LoginCredentialDto) {
-    const validatedUser = await this.validateUser(loginCredential);
-
-    if (!validatedUser) {
-      throw new BadRequestException('Incorrect email or password');
-    }
-
-    const payload = new JwtPayloadDto(validatedUser.id, validatedUser.email);
-
+  async getWsToken(userId: string) {
     return {
-      accessToken: await this.immichJwtService.generateToken(payload),
-      userId: validatedUser.id,
-      userEmail: validatedUser.email,
-      firstName: validatedUser.firstName,
-      lastName: validatedUser.lastName,
-      isAdmin: validatedUser.isAdmin,
-      profileImagePath: validatedUser.profileImagePath,
-      shouldChangePassword: validatedUser.shouldChangePassword,
+      wsToken: await this.immichAuthService.generateWsToken(userId),
     };
   }
 
   public async adminSignUp(signUpCredential: SignUpDto): Promise<UserResponseDto> {
-    const adminUser = await this.userRepository.findOne({ where: { isAdmin: true } });
-
-    if (adminUser) {
-      throw new BadRequestException('The server already has an admin');
+    if (this.configService.get<boolean>('LOCAL_USERS_DISABLE') === true) {
+      throw new BadRequestException("Local users not allowed!");
     }
 
-    const newAdminUser = new UserEntity();
-    newAdminUser.email = signUpCredential.email;
-    newAdminUser.salt = await bcrypt.genSalt();
-    newAdminUser.password = await this.hashPassword(signUpCredential.password, newAdminUser.salt);
-    newAdminUser.firstName = signUpCredential.firstName;
-    newAdminUser.lastName = signUpCredential.lastName;
-    newAdminUser.isAdmin = true;
-
     try {
-      const savedNewAdminUserUser = await this.userRepository.save(newAdminUser);
-
-      return mapUser(savedNewAdminUserUser);
+      const adminUser = await this.immichJwtService.signUpAdmin(signUpCredential.email, signUpCredential.password, signUpCredential.firstName, signUpCredential.lastName);
+      return mapUser(adminUser);
     } catch (e) {
-      Logger.error('e', 'signUp');
+      Logger.error(`Failed to register new admin user: ${e}`, 'AUTH');
       throw new InternalServerErrorException('Failed to register new admin user');
     }
   }
 
-  private async hashPassword(password: string, salt: string): Promise<string> {
-    return bcrypt.hash(password, salt);
-  }
+  public async login(loginCredential: LoginCredentialDto) {
+    if (this.configService.get<boolean>('LOCAL_USERS_DISABLE') === true) {
+      throw new BadRequestException("Local users not allowed!");
+    }
 
-  private async validatePassword(hasedPassword: string, inputPassword: string, salt: string): Promise<boolean> {
-    const hash = await bcrypt.hash(inputPassword, salt);
-    return hash === hasedPassword;
+    return this.immichJwtService.validate(loginCredential.email, loginCredential.password);
   }
 }

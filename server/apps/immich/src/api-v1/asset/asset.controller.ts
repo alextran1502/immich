@@ -17,7 +17,7 @@ import {
   HttpCode,
   BadRequestException,
 } from '@nestjs/common';
-import { JwtAuthGuard } from '../../modules/immich-jwt/guards/jwt-auth.guard';
+import { ImmichAuthGuard } from '../../modules/immich-auth/guards/immich-auth.guard';
 import { AssetService } from './asset.service';
 import { FileFieldsInterceptor } from '@nestjs/platform-express';
 import { assetUploadOption } from '../../config/asset-upload.config';
@@ -37,7 +37,7 @@ import { assetUploadedQueueName } from '@app/job/constants/queue-name.constant';
 import { assetUploadedProcessorName } from '@app/job/constants/job-name.constant';
 import { CheckDuplicateAssetDto } from './dto/check-duplicate-asset.dto';
 
-@UseGuards(JwtAuthGuard)
+@UseGuards(ImmichAuthGuard)
 @Controller('asset')
 export class AssetController {
   constructor(

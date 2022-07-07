@@ -8,6 +8,8 @@ import 'package:immich_mobile/constants/immich_colors.dart';
 import 'package:immich_mobile/modules/backup/providers/backup.provider.dart';
 import 'package:immich_mobile/modules/login/models/hive_saved_login_info.model.dart';
 import 'package:immich_mobile/modules/login/providers/authentication.provider.dart';
+import 'package:immich_mobile/modules/login/services/local_auth.service.dart';
+import 'package:immich_mobile/modules/login/services/oauth2.service.dart';
 import 'package:immich_mobile/routing/router.dart';
 
 class SplashScreenPage extends HookConsumerWidget {
@@ -21,10 +23,10 @@ class SplashScreenPage extends HookConsumerWidget {
     void performLoggingIn() async {
       var isAuthenticated = await ref
           .read(authenticationProvider.notifier)
-          .login(
-              loginInfo!.email, loginInfo.password, loginInfo.serverUrl, true);
+          .refreshLogin();
 
       if (isAuthenticated) {
+        await ref.watch(authenticationProvider.notifier).finalizeLogin();
         // Resume backup (if enable) then navigate
         ref.watch(backupProvider.notifier).resumeBackup();
         AutoRouter.of(context).pushNamed("/tab-controller-page");

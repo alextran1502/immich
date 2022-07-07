@@ -31,4 +31,7 @@ export class UserEntity {
 
   @CreateDateColumn()
   createdAt!: string;
+
+  @Column({default: true})
+  isLocalUser!: boolean;
 }

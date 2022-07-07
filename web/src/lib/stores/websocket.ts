@@ -7,11 +7,12 @@ import { assets } from './assets';
 let websocket: Socket;
 
 export const openWebsocketConnection = (accessToken: string) => {
-	const websocketEndpoint = serverEndpoint.replace('/api', '');
+
+	const websocketEndpoint = new URL(serverEndpoint + '/socket.io');
 
 	try {
-		websocket = io(websocketEndpoint, {
-			path: '/api/socket.io',
+		const websocket = io(websocketEndpoint.origin, {
+			path: websocketEndpoint.pathname,
 			transports: ['polling'],
 			reconnection: true,
 			forceNew: true,

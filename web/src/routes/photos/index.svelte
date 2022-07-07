@@ -3,7 +3,6 @@
 
 	import type { Load } from '@sveltejs/kit';
 	import { getAssetsInfo } from '$lib/stores/assets';
-	import { checkAppVersion } from '$lib/utils/check-app-version';
 
 	export const load: Load = async ({ session }) => {
 		if (!session.user) {
@@ -39,10 +38,10 @@
 	import moment from 'moment';
 	import type { ImmichAsset } from '../../lib/models/immich-asset';
 	import AssetViewer from '../../lib/components/asset-viewer/asset-viewer.svelte';
-	import DownloadPanel from '../../lib/components/asset-viewer/download-panel.svelte';
 	import StatusBox from '../../lib/components/shared/status-box.svelte';
 	import { fileUploader } from '../../lib/utils/file-uploader';
 	import { openWebsocketConnection, closeWebsocketConnection } from '../../lib/stores/websocket';
+	import {serverEndpoint} from "../../lib/constants";
 
 	export let user: ImmichUser;
 	let selectedAction: AppSideBarSelection;
@@ -67,7 +66,20 @@
 		if ($session.user) {
 			await getAssetsInfo($session.user.accessToken);
 
-			openWebsocketConnection($session.user.accessToken);
+			const res = await fetch(`${serverEndpoint}/auth/wsToken`, {
+				method: 'POST',
+				headers: new Headers({
+					'Authorization': `Bearer ${$session.user.accessToken}`,
+				}),
+			});
+
+			if (res.ok) {
+				const { wsToken } = await res.json();
+				openWebsocketConnection(wsToken);
+			} else {
+				console.log("Could not get websocket auth token");
+			}
+
 		}
 	});
 
