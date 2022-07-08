@@ -22,7 +22,11 @@
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "jest --config ./apps/immich/test/jest-e2e.json",
-    "typeorm": "node --require ts-node/register ./node_modules/typeorm/cli.js"
+    "typeorm": "node --require ts-node/register ./node_modules/typeorm/cli.js",
+    "typeorm:migrations:generate": "node --require ts-node/register ./node_modules/typeorm/cli.js migration:generate -d ./libs/database/src/config/database.config.ts -n",
+    "typeorm:migrations:run": "node --require ts-node/register ./node_modules/typeorm/cli.js migration:run -d ./libs/database/src/config/database.config.ts",
+    "typeorm:migrations:revert": "node --require ts-node/register ./node_modules/typeorm/cli.js migration:revert -d ./libs/database/src/config/database.config.ts",
+    "typeorm:schema:drop": "node --require ts-node/register ./node_modules/typeorm/cli.js schema:drop -d ./libs/database/src/config/database.config.ts"
   },
   "dependencies": {
     "@mapbox/mapbox-sdk": "^0.13.3",

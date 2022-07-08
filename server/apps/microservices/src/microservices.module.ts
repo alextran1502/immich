@@ -18,11 +18,12 @@ import {
   thumbnailGeneratorQueueName,
   videoConversionQueueName,
 } from '@app/job/constants/queue-name.constant';
+import { SystemConfigEntity } from '@app/database/entities/system-config.entity';
 
 @Module({
   imports: [
     DatabaseModule,
-    TypeOrmModule.forFeature([UserEntity, ExifEntity, AssetEntity, SmartInfoEntity]),
+    TypeOrmModule.forFeature([UserEntity, ExifEntity, AssetEntity, SmartInfoEntity, SystemConfigEntity]),
     BullModule.forRootAsync({
       useFactory: async () => ({
         redis: {
