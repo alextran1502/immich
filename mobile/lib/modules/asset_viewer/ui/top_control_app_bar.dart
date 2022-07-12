@@ -1,7 +1,7 @@
 import 'dart:developer';
 
-import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/shared/models/immich_asset.model.dart';
 
@@ -26,9 +26,7 @@ class TopControlAppBar extends ConsumerWidget with PreferredSizeWidget {
       toolbarHeight: 60,
       backgroundColor: Colors.black,
       leading: IconButton(
-        onPressed: () {
-          AutoRouter.of(context).pop();
-        },
+        onPressed: GoRouter.of(context).pop,
         icon: const Icon(
           Icons.arrow_back_ios_new_rounded,
           size: 20.0,

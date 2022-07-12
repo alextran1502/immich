@@ -1,131 +1,60 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/modules/home/providers/home_page_state.provider.dart';
-import 'package:immich_mobile/modules/home/ui/control_bottom_app_bar.dart';
-import 'package:immich_mobile/modules/home/ui/daily_title_text.dart';
-import 'package:immich_mobile/modules/home/ui/disable_multi_select_button.dart';
-import 'package:immich_mobile/modules/home/ui/draggable_scrollbar.dart';
-import 'package:immich_mobile/modules/home/ui/image_grid.dart';
-import 'package:immich_mobile/modules/home/ui/immich_sliver_appbar.dart';
-import 'package:immich_mobile/modules/home/ui/monthly_title_text.dart';
-import 'package:immich_mobile/modules/home/ui/profile_drawer.dart';
-import 'package:immich_mobile/shared/providers/asset.provider.dart';
-import 'package:immich_mobile/shared/providers/server_info.provider.dart';
-import 'package:immich_mobile/shared/providers/websocket.provider.dart';
+import 'package:immich_mobile/modules/photos/views/photos_page.dart';
+import 'package:immich_mobile/modules/search/views/search_page.dart';
+import 'package:immich_mobile/modules/sharing/views/sharing_page.dart';
+
+final indexProvider = StateProvider((ref) => 0);
 
 class HomePage extends HookConsumerWidget {
-  const HomePage({Key? key}) : super(key: key);
+  final int initTabIndex;
+  const HomePage({
+    super.key,
+    this.initTabIndex = 0,
+  });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    ScrollController scrollController = useScrollController();
-    var assetGroupByDateTime = ref.watch(assetGroupByDateTimeProvider);
-    List<Widget> imageGridGroup = [];
     var isMultiSelectEnable =
         ref.watch(homePageStateProvider).isMultiSelectEnable;
-    var homePageState = ref.watch(homePageStateProvider);
 
     useEffect(() {
-      ref.read(websocketProvider.notifier).connect();
-      ref.read(assetProvider.notifier).getAllAsset();
-      ref.watch(serverInfoProvider.notifier).getServerVersion();
+      ref.watch(indexProvider.state).state = initTabIndex;
       return null;
     }, []);
 
-    void reloadAllAsset() {
-      ref.read(assetProvider.notifier).getAllAsset();
-    }
-
-    _buildSelectedItemCountIndicator() {
-      return DisableMultiSelectButton(
-        onPressed: ref.watch(homePageStateProvider.notifier).disableMultiSelect,
-        selectedItemCount: homePageState.selectedItems.length,
-      );
-    }
-
-    Widget _buildBody() {
-      if (assetGroupByDateTime.isNotEmpty) {
-        int? lastMonth;
-
-        assetGroupByDateTime.forEach((dateGroup, immichAssetList) {
-          DateTime parseDateGroup = DateTime.parse(dateGroup);
-          int currentMonth = parseDateGroup.month;
-
-          if (lastMonth != null) {
-            if (currentMonth - lastMonth! != 0) {
-              imageGridGroup.add(
-                MonthlyTitleText(
-                  isoDate: dateGroup,
+    return Scaffold(
+      body: IndexedStack(
+        index: ref.watch(indexProvider.state).state,
+        children: const [
+          PhotosPage(),
+          SearchPage(),
+          SharingPage(),
+        ],
+      ),
+      bottomNavigationBar: isMultiSelectEnable
+          ? null
+          : BottomNavigationBar(
+              currentIndex: ref.watch(indexProvider.state).state,
+              onTap: (index) => ref.read(indexProvider.state).state = index,
+              items: [
+                BottomNavigationBarItem(
+                  label: 'tab_controller_nav_photos'.tr(),
+                  icon: const Icon(Icons.photo),
                 ),
-              );
-            }
-          }
-
-          imageGridGroup.add(
-            DailyTitleText(
-              isoDate: dateGroup,
-              assetGroup: immichAssetList,
-            ),
-          );
-
-          imageGridGroup.add(
-            ImageGrid(assetGroup: immichAssetList),
-          );
-
-          lastMonth = currentMonth;
-        });
-      }
-
-      _buildSliverAppBar() {
-        return isMultiSelectEnable
-            ? const SliverToBoxAdapter(
-                child: SizedBox(
-                  height: 70,
-                  child: null,
+                BottomNavigationBarItem(
+                  label: 'tab_controller_nav_search'.tr(),
+                  icon: const Icon(Icons.search),
                 ),
-              )
-            : ImmichSliverAppBar(
-                onPopBack: reloadAllAsset,
-              );
-      }
-
-      return SafeArea(
-        bottom: !isMultiSelectEnable,
-        top: !isMultiSelectEnable,
-        child: Stack(
-          children: [
-            CustomScrollView(
-              slivers: [
-                _buildSliverAppBar(),
+                BottomNavigationBarItem(
+                  label: 'tab_controller_nav_sharing'.tr(),
+                  icon: const Icon(Icons.group_outlined),
+                ),
               ],
             ),
-            Padding(
-              padding: const EdgeInsets.only(top: 50.0),
-              child: DraggableScrollbar.semicircle(
-                backgroundColor: Theme.of(context).primaryColor,
-                controller: scrollController,
-                heightScrollThumb: 48.0,
-                child: CustomScrollView(
-                  controller: scrollController,
-                  slivers: [
-                    ...imageGridGroup,
-                  ],
-                ),
-              ),
-            ),
-            if (isMultiSelectEnable) ...[
-              _buildSelectedItemCountIndicator(),
-              const ControlBottomAppBar(),
-            ],
-          ],
-        ),
-      );
-    }
-
-    return Scaffold(
-      drawer: const ProfileDrawer(),
-      body: _buildBody(),
     );
   }
 }

@@ -1,10 +1,11 @@
-import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
+import 'package:go_router/go_router.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/modules/backup/providers/backup.provider.dart';
 import 'package:immich_mobile/modules/login/providers/authentication.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
+
 import 'package:immich_mobile/shared/providers/asset.provider.dart';
 import 'package:immich_mobile/shared/providers/websocket.provider.dart';
 
@@ -161,7 +162,7 @@ class ChangePasswordButton extends ConsumerWidget {
                 ref.watch(backupProvider.notifier).cancelBackup();
                 ref.watch(assetProvider.notifier).clearAllAsset();
                 ref.watch(websocketProvider.notifier).disconnect();
-                AutoRouter.of(context).replace(const LoginRoute());
+                GoRouter.of(context).goNamed('${ImmichRoute.login}');
               }
             }
           }

@@ -1,10 +1,10 @@
 import 'dart:typed_data';
 
-import 'package:auto_route/auto_route.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:go_router/go_router.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/modules/backup/providers/backup.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
@@ -194,10 +194,9 @@ class AlbumInfoCard extends HookConsumerWidget {
                     ),
                   ),
                   IconButton(
-                    onPressed: () {
-                      AutoRouter.of(context)
-                          .push(AlbumPreviewRoute(album: albumInfo));
-                    },
+                    onPressed: () => GoRouter.of(context).pushNamed(
+                        '${ImmichRoute.albumPreview}',
+                        extra: albumInfo),
                     icon: Icon(
                       Icons.image_outlined,
                       color: Theme.of(context).primaryColor,

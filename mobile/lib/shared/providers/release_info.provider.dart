@@ -42,7 +42,6 @@ class ReleaseInfoNotifier extends StateNotifier<String> {
       }
     } catch (e) {
       debugPrint("Error gettting latest release version");
-
       state = "";
     }
   }

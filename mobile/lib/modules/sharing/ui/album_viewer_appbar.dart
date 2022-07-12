@@ -1,7 +1,7 @@
-import 'package:auto_route/auto_route.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:go_router/go_router.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/immich_colors.dart';
 import 'package:immich_mobile/modules/sharing/models/shared_album.model.dart';
@@ -41,8 +41,7 @@ class AlbumViewerAppbar extends HookConsumerWidget with PreferredSizeWidget {
           await ref.watch(sharedAlbumProvider.notifier).deleteAlbum(albumId);
 
       if (isSuccess) {
-        AutoRouter.of(context)
-            .navigate(const TabControllerRoute(children: [SharingRoute()]));
+        GoRouter.of(context).goNamed('${ImmichRoute.sharing}');
       } else {
         ImmichToast.show(
           context: context,
@@ -62,8 +61,7 @@ class AlbumViewerAppbar extends HookConsumerWidget with PreferredSizeWidget {
           await ref.watch(sharedAlbumProvider.notifier).leaveAlbum(albumId);
 
       if (isSuccess) {
-        AutoRouter.of(context)
-            .navigate(const TabControllerRoute(children: [SharingRoute()]));
+        GoRouter.of(context).goNamed('${ImmichRoute.sharing}');
       } else {
         Navigator.pop(context);
         ImmichToast.show(
@@ -188,7 +186,7 @@ class AlbumViewerAppbar extends HookConsumerWidget with PreferredSizeWidget {
         );
       } else {
         return IconButton(
-          onPressed: () async => await AutoRouter.of(context).pop(),
+          onPressed: GoRouter.of(context).pop,
           icon: const Icon(Icons.arrow_back_ios_rounded),
           splashRadius: 25,
         );

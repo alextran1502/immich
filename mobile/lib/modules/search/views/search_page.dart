@@ -1,7 +1,7 @@
-import 'package:auto_route/auto_route.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
+import 'package:go_router/go_router.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/hive_box.dart';
@@ -12,14 +12,13 @@ import 'package:immich_mobile/modules/search/ui/search_bar.dart';
 import 'package:immich_mobile/modules/search/ui/search_suggestion_list.dart';
 import 'package:immich_mobile/modules/search/ui/thumbnail_with_info.dart';
 import 'package:immich_mobile/routing/router.dart';
+
 import 'package:immich_mobile/shared/ui/immich_loading_indicator.dart';
 import 'package:immich_mobile/utils/capitalize_first_letter.dart';
 
 // ignore: must_be_immutable
 class SearchPage extends HookConsumerWidget {
-  SearchPage({Key? key}) : super(key: key);
-
-  FocusNode searchFocusNode = FocusNode();
+  const SearchPage({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -30,16 +29,22 @@ class SearchPage extends HookConsumerWidget {
     AsyncValue<List<CuratedObject>> curatedObjects =
         ref.watch(getCuratedObjectProvider);
 
+    FocusNode searchFocusNode = FocusNode();
+
     useEffect(() {
-      searchFocusNode = FocusNode();
+      // searchFocusNode = FocusNode();
       return () => searchFocusNode.dispose();
     }, []);
 
     _onSearchSubmitted(String searchTerm) async {
       searchFocusNode.unfocus();
       ref.watch(searchPageStateProvider.notifier).disableSearch();
-
-      AutoRouter.of(context).push(SearchResultRoute(searchTerm: searchTerm));
+      GoRouter.of(context).pushNamed(
+        '${ImmichRoute.searchResult}',
+        queryParams: {
+          'searchTerm': searchTerm,
+        },
+      );
     }
 
     _buildPlaces() {
@@ -66,8 +71,12 @@ class SearchPage extends HookConsumerWidget {
                         imageUrl: thumbnailRequestUrl,
                         textInfo: locationInfo.city,
                         onTap: () {
-                          AutoRouter.of(context).push(
-                              SearchResultRoute(searchTerm: locationInfo.city));
+                          GoRouter.of(context).pushNamed(
+                            '${ImmichRoute.searchResult}',
+                            queryParams: {
+                              'searchTerm': locationInfo.city,
+                            },
+                          );
                         },
                       );
                     }),
@@ -117,9 +126,13 @@ class SearchPage extends HookConsumerWidget {
                         imageUrl: thumbnailRequestUrl,
                         textInfo: curatedObjectInfo.object,
                         onTap: () {
-                          AutoRouter.of(context).push(SearchResultRoute(
-                              searchTerm: curatedObjectInfo.object
-                                  .capitalizeFirstLetter()));
+                          GoRouter.of(context).pushNamed(
+                            '${ImmichRoute.searchResult}',
+                            queryParams: {
+                              'searchTerm': curatedObjectInfo.object
+                                  .capitalizeFirstLetter(),
+                            },
+                          );
                         },
                       );
                     }),
@@ -169,7 +182,7 @@ class SearchPage extends HookConsumerWidget {
                 _buildPlaces(),
                 Padding(
                   padding: EdgeInsets.all(16.0),
-                  child: const  Text(
+                  child: const Text(
                     "search_page_things",
                     style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
                   ).tr(),

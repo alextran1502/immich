@@ -20,7 +20,8 @@ dependencies:
   cached_network_image: ^3.2.1
   percent_indicator: ^4.2.2
   intl: ^0.17.0
-  auto_route: ^4.0.1
+  go_router: ^4.1.0
+  # auto_route: ^4.0.1
   exif: ^3.1.1
   transparent_image: ^2.0.0
   flutter_launcher_icons: "^0.9.2"
@@ -54,7 +55,7 @@ dev_dependencies:
   flutter_lints: ^2.0.1
   hive_generator: ^1.1.2
   build_runner: ^2.1.7
-  auto_route_generator: ^4.0.0
+  # auto_route_generator: ^4.0.0
 
 flutter:
   uses-material-design: true

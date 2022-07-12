@@ -277,7 +277,8 @@ class BackupNotifier extends StateNotifier<BackUpState> {
   /// Invoke backup process
   ///
   void startBackupProcess() async {
-    state = state.copyWith(backupProgress: BackUpProgressEnum.inProgress);
+    var localState =
+        state.copyWith(backupProgress: BackUpProgressEnum.inProgress);
 
     await getBackupInfo();
 
@@ -285,25 +286,26 @@ class BackupNotifier extends StateNotifier<BackUpState> {
     if (authResult.isAuth) {
       await PhotoManager.clearFileCache();
 
-      if (state.allUniqueAssets.isEmpty) {
+      if (localState.allUniqueAssets.isEmpty) {
         debugPrint("No Asset On Device - Abort Backup Process");
-        state = state.copyWith(backupProgress: BackUpProgressEnum.idle);
+        localState = state.copyWith(backupProgress: BackUpProgressEnum.idle);
         return;
       }
 
       Set<AssetEntity> assetsWillBeBackup = Set.from(state.allUniqueAssets);
 
       // Remove item that has already been backed up
-      for (var assetId in state.allAssetsInDatabase) {
+      for (var assetId in localState.allAssetsInDatabase) {
         assetsWillBeBackup.removeWhere((e) => e.id == assetId);
       }
 
       if (assetsWillBeBackup.isEmpty) {
-        state = state.copyWith(backupProgress: BackUpProgressEnum.idle);
+        localState =
+            localState.copyWith(backupProgress: BackUpProgressEnum.idle);
       }
 
       // Perform Backup
-      state = state.copyWith(cancelToken: CancellationToken());
+      state = localState.copyWith(cancelToken: CancellationToken());
       _backupService.backupAsset(
         assetsWillBeBackup,
         state.cancelToken,

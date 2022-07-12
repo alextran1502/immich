@@ -1,15 +1,15 @@
-import 'package:auto_route/auto_route.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
+import 'package:go_router/go_router.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/hive_box.dart';
 import 'package:immich_mobile/modules/home/providers/home_page_state.provider.dart';
 import 'package:immich_mobile/modules/login/providers/authentication.provider.dart';
-import 'package:immich_mobile/shared/models/immich_asset.model.dart';
 import 'package:immich_mobile/routing/router.dart';
+import 'package:immich_mobile/shared/models/immich_asset.model.dart';
 
 class ThumbnailImage extends HookConsumerWidget {
   final ImmichAsset asset;
@@ -62,21 +62,24 @@ class ThumbnailImage extends HookConsumerWidget {
               .addSingleSelectedItem(asset);
         } else {
           if (asset.type == 'IMAGE') {
-            AutoRouter.of(context).push(
-              ImageViewerRoute(
-                imageUrl:
+            GoRouter.of(context).pushNamed(
+              '${ImmichRoute.imageViewer}',
+              extra: asset,
+              queryParams: {
+                'imageUrl':
                     '${box.get(serverEndpointKey)}/asset/file?aid=${asset.deviceAssetId}&did=${asset.deviceId}&isThumb=false',
-                heroTag: asset.id,
-                thumbnailUrl: thumbnailRequestUrl,
-                asset: asset,
-              ),
+                'heroTag': asset.id,
+                'thumbnailUrl': thumbnailRequestUrl,
+              },
             );
           } else {
-            AutoRouter.of(context).push(
-              VideoViewerRoute(
-                  videoUrl:
-                      '${box.get(serverEndpointKey)}/asset/file?aid=${asset.deviceAssetId}&did=${asset.deviceId}',
-                  asset: asset),
+            GoRouter.of(context).pushNamed(
+              '${ImmichRoute.videoViewer}',
+              extra: asset,
+              queryParams: {
+                'videoUrl':
+                    '${box.get(serverEndpointKey)}/asset/file?aid=${asset.deviceAssetId}&did=${asset.deviceId}',
+              },
             );
           }
         }

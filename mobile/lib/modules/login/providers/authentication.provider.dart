@@ -65,7 +65,7 @@ class AuthenticationNotifier extends StateNotifier<AuthenticationState> {
     var deviceInfo = await _deviceInfoService.getDeviceInfo();
     Hive.box(userInfoBox).put(deviceIdKey, deviceInfo["deviceId"]);
 
-    state = state.copyWith(
+    var localState = state.copyWith(
       deviceId: deviceInfo["deviceId"],
       deviceType: deviceInfo["deviceType"],
     );
@@ -79,7 +79,7 @@ class AuthenticationNotifier extends StateNotifier<AuthenticationState> {
 
       Hive.box(userInfoBox).put(accessTokenKey, payload.accessToken);
 
-      state = state.copyWith(
+      localState = localState.copyWith(
         isAuthenticated: true,
         userId: payload.userId,
         userEmail: payload.userEmail,
@@ -113,13 +113,13 @@ class AuthenticationNotifier extends StateNotifier<AuthenticationState> {
       Response res = await _networkService.postRequest(
         url: 'device-info',
         data: {
-          'deviceId': state.deviceId,
-          'deviceType': state.deviceType,
+          'deviceId': localState.deviceId,
+          'deviceType': localState.deviceType,
         },
       );
 
       DeviceInfoRemote deviceInfo = DeviceInfoRemote.fromJson(res.toString());
-      state = state.copyWith(deviceInfo: deviceInfo);
+      state = localState.copyWith(deviceInfo: deviceInfo);
     } catch (e) {
       debugPrint("ERROR Register Device Info: $e");
     }

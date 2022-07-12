@@ -1,6 +1,6 @@
-import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
+import 'package:go_router/go_router.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/hive_box.dart';
@@ -15,7 +15,7 @@ class SplashScreenPage extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    HiveSavedLoginInfo? loginInfo =
+    var loginInfo =
         Hive.box<HiveSavedLoginInfo>(hiveLoginInfoBox).get(savedLoginInfoKey);
 
     void performLoggingIn() async {
@@ -24,21 +24,17 @@ class SplashScreenPage extends HookConsumerWidget {
           .login(
               loginInfo!.email, loginInfo.password, loginInfo.serverUrl, true);
 
-      if (isAuthenticated) {
-        // Resume backup (if enable) then navigate
-        ref.watch(backupProvider.notifier).resumeBackup();
-        AutoRouter.of(context).pushNamed("/tab-controller-page");
-      } else {
-        AutoRouter.of(context).push(const LoginRoute());
-      }
+      if (isAuthenticated) ref.watch(backupProvider.notifier).resumeBackup();
     }
 
     useEffect(() {
-      if (loginInfo?.isSaveLogin == true) {
-        performLoggingIn();
-      } else {
-        AutoRouter.of(context).push(const LoginRoute());
-      }
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (loginInfo?.isSaveLogin == true) {
+          performLoggingIn();
+        } else {
+          GoRouter.of(context).goNamed('${ImmichRoute.login}');
+        }
+      });
       return null;
     }, []);
 

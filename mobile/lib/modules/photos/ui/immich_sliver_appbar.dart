@@ -1,11 +1,11 @@
-import 'package:auto_route/auto_route.dart';
 import 'package:badges/badges.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/modules/login/providers/authentication.provider.dart';
 
-import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/modules/backup/models/backup_state.model.dart';
+import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/shared/models/server_info_state.model.dart';
 import 'package:immich_mobile/modules/backup/providers/backup.provider.dart';
 import 'package:immich_mobile/shared/providers/server_info.provider.dart';
@@ -118,14 +118,8 @@ class ImmichSliverAppBar extends ConsumerWidget {
                         size: 8,
                       ),
                       child: const Icon(Icons.backup_rounded)),
-              onPressed: () async {
-                var onPop = await AutoRouter.of(context)
-                    .push(const BackupControllerRoute());
-
-                if (onPop != null && onPop == true) {
-                  onPopBack!();
-                }
-              },
+              onPressed: () => GoRouter.of(context)
+                  .pushNamed('${ImmichRoute.backupController}'),
             ),
             if (backupState.backupProgress == BackUpProgressEnum.inProgress)
               Positioned(

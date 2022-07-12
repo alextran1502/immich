@@ -1,5 +1,5 @@
-import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/modules/backup/providers/error_backup_list.provider.dart';
 import 'package:intl/intl.dart';
@@ -20,7 +20,7 @@ class FailedBackupStatusPage extends HookConsumerWidget {
         ),
         leading: IconButton(
             onPressed: () {
-              AutoRouter.of(context).pop(true);
+              GoRouter.of(context).pop();
             },
             splashRadius: 24,
             icon: const Icon(

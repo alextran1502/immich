@@ -1,7 +1,7 @@
-import 'package:auto_route/auto_route.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
+import 'package:go_router/go_router.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/modules/sharing/providers/album_title.provider.dart';
 import 'package:immich_mobile/modules/sharing/providers/asset_selection.provider.dart';
@@ -33,11 +33,12 @@ class SelectUserForSharingPage extends HookConsumerWidget {
         ref.watch(assetSelectionProvider.notifier).removeAll();
         ref.watch(albumTitleProvider.notifier).clearAlbumTitle();
 
-        AutoRouter.of(context)
-            .navigate(const TabControllerRoute(children: [SharingRoute()]));
+        GoRouter.of(context).goNamed('${ImmichRoute.sharing}');
       }
 
-      ScaffoldMessenger(child: SnackBar(content: Text('select_user_for_sharing_page_err_album').tr()));
+      ScaffoldMessenger(
+          child: SnackBar(
+              content: Text('select_user_for_sharing_page_err_album').tr()));
     }
 
     _buildTileIcon(User user) {
@@ -135,9 +136,7 @@ class SelectUserForSharingPage extends HookConsumerWidget {
         centerTitle: false,
         leading: IconButton(
           icon: const Icon(Icons.close_rounded),
-          onPressed: () async {
-            AutoRouter.of(context).pop();
-          },
+          onPressed: GoRouter.of(context).pop,
         ),
         actions: [
           TextButton(

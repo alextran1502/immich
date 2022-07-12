@@ -1,12 +1,15 @@
-import 'package:auto_route/auto_route.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
+import 'package:go_router/go_router.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/modules/sharing/models/shared_album.model.dart';
+import 'package:immich_mobile/modules/sharing/providers/shared_album.provider.dart';
 import 'package:immich_mobile/modules/sharing/providers/suggested_shared_users.provider.dart';
+import 'package:immich_mobile/modules/sharing/services/shared_album.service.dart';
 import 'package:immich_mobile/shared/models/user.model.dart';
 import 'package:immich_mobile/shared/ui/immich_loading_indicator.dart';
+import 'package:immich_mobile/shared/views/immich_loading_overlay.dart';
 
 class SelectAdditionalUserForSharingPage extends HookConsumerWidget {
   final SharedAlbum albumInfo;
@@ -20,9 +23,20 @@ class SelectAdditionalUserForSharingPage extends HookConsumerWidget {
         ref.watch(suggestedSharedUsersProvider);
     final sharedUsersList = useState<Set<User>>({});
 
-    _addNewUsersHandler() {
-      AutoRouter.of(context)
-          .pop(sharedUsersList.value.map((e) => e.id).toList());
+    _addNewUsersHandler() async {
+      var sharedUserIds = sharedUsersList.value.map((e) => e.id).toList();
+      ImmichLoadingOverlayController.appLoader.show();
+
+      var isSuccess = await ref
+          .watch(sharedAlbumServiceProvider)
+          .addAdditionalUserToAlbum(sharedUserIds, albumInfo.id);
+
+      if (isSuccess) {
+        ref.refresh(sharedAlbumDetailProvider(albumInfo.id));
+      }
+
+      ImmichLoadingOverlayController.appLoader.hide();
+      GoRouter.of(context).pop();
     }
 
     _buildTileIcon(User user) {
@@ -120,9 +134,7 @@ class SelectAdditionalUserForSharingPage extends HookConsumerWidget {
         centerTitle: false,
         leading: IconButton(
           icon: const Icon(Icons.close_rounded),
-          onPressed: () {
-            AutoRouter.of(context).pop(null);
-          },
+          onPressed: GoRouter.of(context).pop,
         ),
         actions: [
           TextButton(

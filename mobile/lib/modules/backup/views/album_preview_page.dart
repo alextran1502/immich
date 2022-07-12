@@ -1,8 +1,8 @@
 import 'dart:typed_data';
 
-import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
+import 'package:go_router/go_router.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/shared/ui/immich_loading_indicator.dart';
 import 'package:photo_manager/photo_manager.dart';
@@ -47,7 +47,7 @@ class AlbumPreviewPage extends HookConsumerWidget {
           ],
         ),
         leading: IconButton(
-          onPressed: () => AutoRouter.of(context).pop(),
+          onPressed: GoRouter.of(context).pop,
           icon: const Icon(Icons.arrow_back_ios_new_rounded),
         ),
       ),

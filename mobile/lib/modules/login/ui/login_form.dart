@@ -1,12 +1,13 @@
-import 'package:auto_route/auto_route.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
+import 'package:go_router/go_router.dart';
 import 'package:hive/hive.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/hive_box.dart';
 import 'package:immich_mobile/modules/login/models/hive_saved_login_info.model.dart';
 import 'package:immich_mobile/routing/router.dart';
+
 import 'package:immich_mobile/shared/providers/asset.provider.dart';
 import 'package:immich_mobile/modules/login/providers/authentication.provider.dart';
 import 'package:immich_mobile/modules/backup/providers/backup.provider.dart';
@@ -108,7 +109,6 @@ class ServerEndpointInput extends StatelessWidget {
       : super(key: key);
 
   String? _validateInput(String? url) {
-
     if (url?.startsWith(RegExp(r'https?://')) == true) {
       return null;
     } else {
@@ -216,10 +216,10 @@ class LoginButton extends ConsumerWidget {
 
             if (ref.watch(authenticationProvider).shouldChangePassword &&
                 !ref.watch(authenticationProvider).isAdmin) {
-              AutoRouter.of(context).push(const ChangePasswordRoute());
+              GoRouter.of(context).goNamed('${ImmichRoute.changePassword}');
             } else {
               ref.watch(backupProvider.notifier).resumeBackup();
-              AutoRouter.of(context).pushNamed("/tab-controller-page");
+              GoRouter.of(context).goNamed("${ImmichRoute.home}");
             }
           } else {
             ImmichToast.show(
