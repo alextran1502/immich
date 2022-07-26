@@ -1,34 +1,21 @@
-<script context="module" lang="ts">
-	export const prerender = false;
+<script lang="ts">
 	import type { Load } from '@sveltejs/kit';
 	import { api } from '@api';
-
-	export const load: Load = async ({ session }) => {
-		const { data } = await api.userApi.getUserCount();
-
-		if (session.user) {
-			return {
-				status: 302,
-				redirect: '/photos',
-			};
-		}
-
-		return {
-			status: 200,
-			props: {
-				isAdminUserExist: data.userCount == 0 ? false : true,
-			},
-		};
-	};
-</script>
-
-<script lang="ts">
 	import { goto } from '$app/navigation';
+	import { checkUserAuthStatus, gotoLogin } from '$lib/user_auth';
 
-	export let isAdminUserExist: boolean;
+	checkUserAuthStatus().then(() => {
+		goto('/photos');
+	});
 
-	async function onGettingStartedClicked() {
-		isAdminUserExist ? goto('/auth/login') : goto('/auth/register');
+	function onGettingStartedClicked() {
+		api.userApi.getUserCount().then(resp => {
+			if (resp.data.userCount === 0) {
+				goto('/auth/register')
+			} else {
+				gotoLogin();
+			}
+		});
 	}
 </script>
 

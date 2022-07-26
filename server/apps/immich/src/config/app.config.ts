@@ -16,6 +16,6 @@ export const immichAppConfig: ConfigModuleOptions = {
       then: Joi.string().optional().allow(null, ''),
       otherwise: Joi.string().required(),
     }),
-    VITE_SERVER_ENDPOINT: Joi.string().required(),
+    VITE_SERVER_ENDPOINT: Joi.string().optional(),
   }),
 };

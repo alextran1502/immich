@@ -1,18 +1,3 @@
-<script context="module" lang="ts">
-	import type { Load } from '@sveltejs/kit';
-	import { checkAppVersion } from '$lib/utils/check-app-version';
-
-	export const load: Load = async ({ url, session }) => {
-		if (session.user) {
-			api.setAccessToken(session.user.accessToken);
-		}
-
-		return {
-			props: { url }
-		};
-	};
-</script>
-
 <script lang="ts">
 	import '../app.css';
 
@@ -22,14 +7,15 @@
 	import AnnouncementBox from '$lib/components/shared-components/announcement-box.svelte';
 	import UploadPanel from '$lib/components/shared-components/upload-panel.svelte';
 	import { onMount } from 'svelte';
-	import { api } from '@api';
+	import { checkAppVersion } from '$lib/utils/check-app-version';
+	import { page } from '$app/stores';
 
-	export let url: string;
 	let shouldShowAnnouncement: boolean;
 	let localVersion: string;
 	let remoteVersion: string;
 
 	onMount(async () => {
+		console.log('run on mount layout');
 		const res = await checkAppVersion();
 
 		shouldShowAnnouncement = res.shouldShowAnnouncement;
@@ -39,7 +25,7 @@
 </script>
 
 <main>
-	{#key url}
+	{#key $page.url}
 		<div in:fade={{ duration: 100 }}>
 			<slot />
 			<DownloadPanel />

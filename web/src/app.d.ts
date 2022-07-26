@@ -7,7 +7,6 @@ declare namespace App {
     user?: {
       id: string,
       email: string,
-      accessToken: string,
       firstName: string,
       lastName: string,
       isAdmin: boolean,
@@ -17,14 +16,7 @@ declare namespace App {
   // interface Platform {}
 
   interface Session {
-    user?: {
-      id: string,
-      email: string,
-      accessToken: string,
-      firstName: string,
-      lastName: string
-      isAdmin: boolean,
-    }
+    user?: import('./api/open-api').UserResponseDto
   }
 
   // interface Stuff {}

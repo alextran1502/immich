@@ -1,12 +1,15 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
+	import { api } from '@api';
 
-	import { sendRegistrationForm } from '$lib/auth-api';
 	let error: string;
-	let success: string;
+	let success: boolean;
 
 	let password: string = '';
 	let confirmPassowrd: string = '';
+	let email: string = '';
+	let firstName: string = '';
+	let lastName: string = '';
 
 	let canRegister = false;
 
@@ -19,21 +22,20 @@
 			canRegister = true;
 		}
 	}
-	async function registerAdmin(event: SubmitEvent) {
+	async function registerAdmin(_?: Event) {
 		if (canRegister) {
-			error = '';
+			try {
+				const response = await api.authenticationApi.adminSignUp({
+					email,
+					password,
+					firstName,
+					lastName
+				});
 
-			const formElement = event.target as HTMLFormElement;
-
-			const response = await sendRegistrationForm(formElement);
-
-			if (response.error) {
-				error = JSON.stringify(response.error);
-			}
-
-			if (response.success) {
-				success = response.success;
+				success = true;
 				goto('/auth/login');
+			} catch (e) {
+				error = 'Error create admin account';
 			}
 		}
 	}
@@ -52,7 +54,7 @@
 	<form on:submit|preventDefault={registerAdmin} method="post" action="" autocomplete="off">
 		<div class="m-4 flex flex-col gap-2">
 			<label class="immich-form-label" for="email">Admin Email</label>
-			<input class="immich-form-input" id="email" name="email" type="email" required />
+			<input class="immich-form-input" id="email" name="email" type="email" required bind:value={email} />
 		</div>
 
 		<div class="m-4 flex flex-col gap-2">
@@ -74,12 +76,12 @@
 
 		<div class="m-4 flex flex-col gap-2">
 			<label class="immich-form-label" for="firstName">First Name</label>
-			<input class="immich-form-input" id="firstName" name="firstName" type="text" required />
+			<input class="immich-form-input" id="firstName" name="firstName" type="text" required bind:value={firstName} />
 		</div>
 
 		<div class="m-4 flex flex-col gap-2">
 			<label class="immich-form-label" for="lastName">Last Name</label>
-			<input class="immich-form-input" id="lastName" name="lastName" type="text" required />
+			<input class="immich-form-input" id="lastName" name="lastName" type="text" required bind:value={lastName} />
 		</div>
 
 		{#if error}
@@ -97,7 +99,7 @@
 
 		<div class="flex w-full">
 			<button
-				type="submit"
+				on:click={registerAdmin}
 				class="m-4 p-2 bg-immich-primary hover:bg-immich-primary/75 px-6 py-4 text-white rounded-md shadow-md w-full"
 				>Sign Up</button
 			>

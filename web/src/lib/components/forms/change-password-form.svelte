@@ -1,5 +1,6 @@
 <script lang="ts">
-	import { sendUpdateForm } from '$lib/auth-api';
+	import { api } from '@api';
+
 	import { createEventDispatcher } from 'svelte';
 	import type { ImmichUser } from '../../models/immich-user';
 
@@ -27,17 +28,13 @@
 		if (changeChagePassword) {
 			error = '';
 
-			const formElement = event.target as HTMLFormElement;
+			const { status } = await api.userApi.updateUser({
+				id: user.id,
+				password: password,
+				shouldChangePassword: false
+			});
 
-			const response = await sendUpdateForm(formElement);
-
-			if (response.error) {
-				error = JSON.stringify(response.error);
-			}
-
-			if (response.success) {
-				success = 'Password has been changed';
-
+			if (status == 200) {
 				dispatch('success');
 			}
 		}

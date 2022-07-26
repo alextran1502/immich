@@ -1,5 +1,6 @@
 <script lang="ts">
-	import { sendRegistrationForm } from '$lib/auth-api';
+	import { api } from '@api';
+
 	import { createEventDispatcher } from 'svelte';
 
 	let error: string;
@@ -7,6 +8,10 @@
 
 	let password: string = '';
 	let confirmPassowrd: string = '';
+
+	let firstName: string = '';
+	let lastName: string = '';
+	let email: string = '';
 
 	let canCreateUser = false;
 
@@ -25,18 +30,19 @@
 		if (canCreateUser) {
 			error = '';
 
-			const formElement = event.target as HTMLFormElement;
+			try {
+				await api.userApi.createUser({
+					email,
+					password,
+					firstName,
+					lastName
+				});
 
-			const response = await sendRegistrationForm(formElement);
-
-			if (response.error) {
-				error = JSON.stringify(response.error);
-			}
-
-			if (response.success) {
 				success = 'New user created';
-
 				dispatch('user-created');
+			} catch (e) {
+				error = 'User creation failed';
+				console.error('Error [create-user-form] [registerUser]', e);
 			}
 		}
 	}
@@ -47,19 +53,34 @@
 		<img class="text-center" src="/immich-logo.svg" height="100" width="100" alt="immich-logo" />
 		<h1 class="text-2xl text-immich-primary font-medium">Create new user</h1>
 		<p class="text-sm border rounded-md p-4 font-mono text-gray-600">
-			Please provide your user with the password, they will have to change it on their first sign in.
+			Please provide your user with the password, they will have to change it on their first sign
+			in.
 		</p>
 	</div>
 
-	<form on:submit|preventDefault={registerUser} method="post" action="/admin/api/create-user" autocomplete="off">
+	<form on:submit|preventDefault={registerUser} autocomplete="off">
 		<div class="m-4 flex flex-col gap-2">
 			<label class="immich-form-label" for="email">Email</label>
-			<input class="immich-form-input" id="email" name="email" type="email" required />
+			<input
+				class="immich-form-input"
+				id="email"
+				name="email"
+				type="email"
+				required
+				bind:value={email}
+			/>
 		</div>
 
 		<div class="m-4 flex flex-col gap-2">
 			<label class="immich-form-label" for="password">Password</label>
-			<input class="immich-form-input" id="password" name="password" type="password" required bind:value={password} />
+			<input
+				class="immich-form-input"
+				id="password"
+				name="password"
+				type="password"
+				required
+				bind:value={password}
+			/>
 		</div>
 
 		<div class="m-4 flex flex-col gap-2">
@@ -76,12 +97,26 @@
 
 		<div class="m-4 flex flex-col gap-2">
 			<label class="immich-form-label" for="firstName">First Name</label>
-			<input class="immich-form-input" id="firstName" name="firstName" type="text" required />
+			<input
+				class="immich-form-input"
+				id="firstName"
+				name="firstName"
+				type="text"
+				required
+				bind:value={firstName}
+			/>
 		</div>
 
 		<div class="m-4 flex flex-col gap-2">
 			<label class="immich-form-label" for="lastName">Last Name</label>
-			<input class="immich-form-input" id="lastName" name="lastName" type="text" required />
+			<input
+				class="immich-form-input"
+				id="lastName"
+				name="lastName"
+				type="text"
+				required
+				bind:value={lastName}
+			/>
 		</div>
 
 		{#if error}

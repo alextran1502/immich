@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { afterNavigate, goto } from '$app/navigation';
+	import { afterNavigate, beforeNavigate, goto } from '$app/navigation';
 	import { page } from '$app/stores';
 	import { AlbumResponseDto, api, AssetResponseDto, ThumbnailFormat, UserResponseDto } from '@api';
 	import { onMount } from 'svelte';
@@ -18,7 +18,9 @@
 	import CircleIconButton from '../shared-components/circle-icon-button.svelte';
 	import Close from 'svelte-material-icons/Close.svelte';
 	import DeleteOutline from 'svelte-material-icons/DeleteOutline.svelte';
+
 	export let album: AlbumResponseDto;
+	export let backUrl = '/albums';
 
 	let isShowAssetViewer = false;
 	let isShowAssetSelection = false;
@@ -33,7 +35,6 @@
 	let viewWidth: number;
 	let thumbnailSize: number = 300;
 	let border = '';
-	let backUrl = '/albums';
 	let currentAlbumName = '';
 	let currentUser: UserResponseDto;
 
@@ -41,14 +42,6 @@
 
 	let multiSelectAsset: Set<AssetResponseDto> = new Set();
 	$: isMultiSelectionMode = multiSelectAsset.size > 0;
-
-	afterNavigate(({ from }) => {
-		backUrl = from?.pathname ?? '/albums';
-
-		if (from?.pathname === '/sharing') {
-			isCreatingSharedAlbum = true;
-		}
-	});
 
 	$: {
 		if (album.assets.length < 6) {
@@ -74,6 +67,10 @@
 	};
 
 	onMount(async () => {
+		if (backUrl === '/sharing') {
+			isCreatingSharedAlbum = true;
+		}
+
 		currentAlbumName = album.albumName;
 
 		try {

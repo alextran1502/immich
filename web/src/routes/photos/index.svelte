@@ -1,44 +1,16 @@
-<script context="module" lang="ts">
-	export const prerender = false;
-
-	import type { Load } from '@sveltejs/kit';
-	import { getAssetsInfo } from '$lib/stores/assets';
-
-	export const load: Load = async ({ session }) => {
-		if (!session.user) {
-			return {
-				status: 302,
-				redirect: '/auth/login'
-			};
-		}
-
-		await getAssetsInfo();
-
-		return {
-			status: 200,
-			props: {
-				user: session.user
-			}
-		};
-	};
-</script>
-
 <script lang="ts">
-	import type { ImmichUser } from '$lib/models/immich-user';
-
 	import NavigationBar from '$lib/components/shared-components/navigation-bar.svelte';
 	import CheckCircle from 'svelte-material-icons/CheckCircle.svelte';
 	import { fly } from 'svelte/transition';
 	import { session } from '$app/stores';
-	import { assetsGroupByDate, flattenAssetGroupByDate } from '$lib/stores/assets';
+	import { assetsGroupByDate, flattenAssetGroupByDate, getAssetsInfo } from '$lib/stores/assets';
 	import ImmichThumbnail from '$lib/components/shared-components/immich-thumbnail.svelte';
 	import moment from 'moment';
 	import AssetViewer from '$lib/components/asset-viewer/asset-viewer.svelte';
 	import { fileUploader } from '$lib/utils/file-uploader';
 	import { AssetResponseDto } from '@api';
 	import SideBar from '$lib/components/shared-components/side-bar/side-bar.svelte';
-
-	export let user: ImmichUser;
+	import { checkUserAuthStatus, gotoLogin } from '$lib/user_auth';
 
 	let selectedGroupThumbnail: number | null;
 	let isMouseOverGroup: boolean;
@@ -50,6 +22,14 @@
 	let isShowAssetViewer = false;
 	let currentViewAssetIndex = 0;
 	let selectedAsset: AssetResponseDto;
+
+	checkUserAuthStatus()
+		.then(() => {
+			getAssetsInfo();
+		})
+		.catch(() => {
+			gotoLogin();
+		});
 
 	const thumbnailMouseEventHandler = (event: CustomEvent) => {
 		const { selectedGroupIndex }: { selectedGroupIndex: number } = event.detail;
@@ -83,7 +63,7 @@
 					);
 
 					for (const asset of acceptedFile) {
-						await fileUploader(asset, $session.user!.accessToken);
+						await fileUploader(asset);
 					}
 				};
 
@@ -135,7 +115,9 @@
 </svelte:head>
 
 <section>
-	<NavigationBar {user} on:uploadClicked={uploadClickedHandler} />
+	{#if $session.user}
+		<NavigationBar user={$session.user} on:uploadClicked={uploadClickedHandler} />
+	{/if}
 </section>
 
 <section class="grid grid-cols-[250px_auto] relative pt-[72px] h-screen bg-immich-bg">

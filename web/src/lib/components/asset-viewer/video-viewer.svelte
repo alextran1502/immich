@@ -16,50 +16,46 @@
 	let isVideoLoading = true;
 
 	onMount(async () => {
-		if ($session.user) {
-			const { data: assetInfo } = await api.assetApi.getAssetById(assetId);
+		const { data: assetInfo } = await api.assetApi.getAssetById(assetId);
 
-			asset = assetInfo;
+		asset = assetInfo;
 
-			await loadVideoData();
-		}
+		await loadVideoData();
 	});
 
 	const loadVideoData = async () => {
 		isVideoLoading = true;
 
-		if ($session.user) {
-			try {
-				const { data } = await api.assetApi.serveFile(
-					asset.deviceAssetId,
-					asset.deviceId,
-					false,
-					true,
-					{
-						responseType: 'blob'
-					}
-				);
-
-				if (!(data instanceof Blob)) {
-					return;
+		try {
+			const { data } = await api.assetApi.serveFile(
+				asset.deviceAssetId,
+				asset.deviceId,
+				false,
+				true,
+				{
+					responseType: 'blob'
 				}
+			);
 
-				const videoData = URL.createObjectURL(data);
-				videoPlayerNode.src = videoData;
+			if (!(data instanceof Blob)) {
+				return;
+			}
 
-				videoPlayerNode.load();
+			const videoData = URL.createObjectURL(data);
+			videoPlayerNode.src = videoData;
 
-				videoPlayerNode.oncanplay = () => {
-					videoPlayerNode.muted = true;
-					videoPlayerNode.play();
-					videoPlayerNode.muted = false;
+			videoPlayerNode.load();
 
-					isVideoLoading = false;
-				};
+			videoPlayerNode.oncanplay = () => {
+				videoPlayerNode.muted = true;
+				videoPlayerNode.play();
+				videoPlayerNode.muted = false;
 
-				return videoData;
-			} catch (e) {}
-		}
+				isVideoLoading = false;
+			};
+
+			return videoData;
+		} catch (e) {}
 	};
 </script>
 

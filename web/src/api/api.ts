@@ -1,4 +1,3 @@
-import { serverEndpoint } from '$lib/constants';
 import {
 	AlbumApi,
 	AssetApi,
@@ -16,7 +15,7 @@ class ImmichApi {
 	public authenticationApi: AuthenticationApi;
 	public deviceInfoApi: DeviceInfoApi;
 	public serverInfoApi: ServerInfoApi;
-	private config = new Configuration({ basePath: serverEndpoint });
+	private config = new Configuration({ basePath: '/api' });
 
 	constructor() {
 		this.userApi = new UserApi(this.config);

@@ -16,23 +16,27 @@ export class AdminRolesGuard implements CanActivate {
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest();
+    let accessToken = '';
 
     if (request.headers['authorization']) {
-      const bearerToken = request.headers['authorization'].split(' ')[1];
-      const { userId } = await this.jwtService.validateToken(bearerToken);
-
-      if (!userId) {
-        return false;
-      }
-
-      const user = await this.userRepository.findOne({ where: { id: userId } });
-      if (!user) {
-        return false;
-      }
-
-      return user.isAdmin;
+      accessToken = request.headers['authorization'].split(' ')[1];
+    } else if (request.cookies['immich_access_token']) {
+      accessToken = request.cookies['immich_access_token'];
+    } else {
+      return false;
     }
 
-    return false;
+    const { userId } = await this.jwtService.validateToken(accessToken);
+
+    if (!userId) {
+      return false;
+    }
+
+    const user = await this.userRepository.findOne({ where: { id: userId } });
+    if (!user) {
+      return false;
+    }
+
+    return user.isAdmin;
   }
 }

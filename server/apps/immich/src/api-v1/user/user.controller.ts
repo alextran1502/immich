@@ -62,6 +62,7 @@ export class UserController {
   @UseGuards(AdminRolesGuard)
   @Post()
   async createUser(@Body(ValidationPipe) createUserDto: CreateUserDto): Promise<UserResponseDto> {
+    console.log('create user');
     return await this.userService.createUser(createUserDto);
   }
 

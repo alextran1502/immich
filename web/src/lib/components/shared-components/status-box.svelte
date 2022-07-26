@@ -1,11 +1,10 @@
 <script lang="ts">
-	import { getRequest } from '$lib/utils/api-helper';
 	import { onDestroy, onMount } from 'svelte';
-	import { serverEndpoint } from '$lib/constants';
 	import Cloud from 'svelte-material-icons/Cloud.svelte';
 	import Dns from 'svelte-material-icons/Dns.svelte';
 	import LoadingSpinner from './loading-spinner.svelte';
-	import { goto } from '$app/navigation';
+	import { api } from '@api';
+	import { page } from '$app/stores';
 
 	type ServerInfoType = {
 		diskAvailable: string;
@@ -17,27 +16,27 @@
 		diskUseRaw: number;
 	};
 
-	let endpoint = serverEndpoint;
 	let isServerOk = true;
 	let serverVersion = '';
 	let serverInfoRes: ServerInfoType;
 
 	onMount(async () => {
-		const res = await getRequest('server-info/version', '');
-		serverVersion = `v${res.major}.${res.minor}.${res.patch}`;
+		console.log($page);
+		const serverVersionResponse = await api.serverInfoApi.getServerVersion();
+		serverVersion = `v${serverVersionResponse.data.major}.${serverVersionResponse.data.minor}.${serverVersionResponse.data.patch}`;
 
-		serverInfoRes = (await getRequest('server-info', '')) as ServerInfoType;
+		serverInfoRes = (await api.serverInfoApi.getServerInfo()).data;
 
 		getStorageUsagePercentage();
 	});
 
 	const pingServerInterval = setInterval(async () => {
-		const response = await getRequest('server-info/ping', '');
+		const response = await api.serverInfoApi.pingServer();
 
-		if (response.res === 'pong') isServerOk = true;
+		if (response.data.res === 'pong') isServerOk = true;
 		else isServerOk = false;
 
-		serverInfoRes = (await getRequest('server-info', '')) as ServerInfoType;
+		serverInfoRes = (await api.serverInfoApi.getServerInfo()).data;
 	}, 10000);
 
 	onDestroy(() => clearInterval(pingServerInterval));
@@ -57,7 +56,10 @@
 			{#if serverInfoRes}
 				<div class="w-full bg-gray-200 rounded-full h-[7px] dark:bg-gray-700 my-2">
 					<!-- style={`width: ${$downloadAssets[fileName]}%`} -->
-					<div class="bg-immich-primary h-[7px] rounded-full" style={`width: ${getStorageUsagePercentage()}%`} />
+					<div
+						class="bg-immich-primary h-[7px] rounded-full"
+						style={`width: ${getStorageUsagePercentage()}%`}
+					/>
 				</div>
 				<p class="text-xs">{serverInfoRes?.diskUse} of {serverInfoRes?.diskSize} used</p>
 			{:else}
@@ -80,7 +82,7 @@
 
 			<input
 				class="border p-2 rounded-md bg-gray-200 mt-2 text-immich-primary font-medium"
-				value={endpoint}
+				value={$page.url.origin}
 				disabled={true}
 			/>
 			<div class="flex justify-items-center justify-between mt-2">

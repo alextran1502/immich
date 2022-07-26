@@ -1,27 +1,3 @@
-<script context="module" lang="ts">
-	import type { Load } from '@sveltejs/kit';
-	import { api, UserResponseDto } from '@api';
-
-	export const load: Load = async ({ session }) => {
-		if (!session.user) {
-			return {
-				status: 302,
-				redirect: '/auth/login'
-			};
-		}
-
-		const { data } = await api.userApi.getAllUsers(false);
-
-		return {
-			status: 200,
-			props: {
-				user: session.user,
-				allUsers: data
-			}
-		};
-	};
-</script>
-
 <script lang="ts">
 	import { onMount } from 'svelte';
 
@@ -34,11 +10,24 @@
 	import FullScreenModal from '$lib/components/shared-components/full-screen-modal.svelte';
 	import CreateUserForm from '$lib/components/forms/create-user-form.svelte';
 	import StatusBox from '$lib/components/shared-components/status-box.svelte';
+	import { api, UserResponseDto } from '@api';
+	import { session } from '$app/stores';
+	import { checkUserAuthStatus, gotoLogin } from '$lib/user_auth';
+
+	checkUserAuthStatus()
+		.then(usr => {
+			if (!usr.isAdmin) {
+				gotoLogin();
+			}
+		})
+		.catch(() => gotoLogin());
 
 	let selectedAction: AdminSideBarSelection;
 
-	export let user: ImmichUser;
-	export let allUsers: UserResponseDto[];
+	let allUsers: UserResponseDto[];
+	api.userApi.getAllUsers(false).then(({ data }) => {
+		allUsers = data;
+	})
 
 	let shouldShowCreateUserForm: boolean;
 
@@ -62,7 +51,9 @@
 	<title>Administration - Immich</title>
 </svelte:head>
 
-<NavigationBar {user} />
+{#if $session.user}
+	<NavigationBar user={$session.user} />
+{ /if}
 
 {#if shouldShowCreateUserForm}
 	<FullScreenModal on:clickOutside={() => (shouldShowCreateUserForm = false)}>
@@ -94,7 +85,7 @@
 
 		<section id="setting-content" class="relative pt-[85px] flex place-content-center">
 			<section class="w-[800px] pt-4">
-				{#if selectedAction === AdminSideBarSelection.USER_MANAGEMENT}
+				{#if selectedAction === AdminSideBarSelection.USER_MANAGEMENT && allUsers}
 					<UserManagement {allUsers} on:createUser={() => (shouldShowCreateUserForm = true)} />
 				{/if}
 			</section>

@@ -2,15 +2,14 @@
 	import { session } from '$app/stores';
 	import { goto } from '$app/navigation';
 	import { page } from '$app/stores';
-	import type { ImmichUser } from '$lib/models/immich-user';
 	import { createEventDispatcher, onMount } from 'svelte';
 	import { fade, fly, slide } from 'svelte/transition';
-	import { serverEndpoint } from '../../constants';
 	import TrayArrowUp from 'svelte-material-icons/TrayArrowUp.svelte';
 	import { clickOutside } from '../../utils/click-outside';
-	import { api } from '@api';
+	import { api, UserResponseDto } from '@api';
+	import { gotoLogin, logoutUser } from '$lib/user_auth';
 
-	export let user: ImmichUser;
+	export let user: UserResponseDto;
 
 	let shouldShowAccountInfo = false;
 	let shouldShowProfileImage = false;
@@ -23,14 +22,12 @@
 	});
 
 	const getUserProfileImage = async () => {
-		if ($session.user) {
-			try {
-				await api.userApi.getProfileImage(user.id);
-				shouldShowProfileImage = true;
-			} catch (e) {
-				console.log('User does not have a profile image');
-				shouldShowProfileImage = false;
-			}
+		try {
+			await api.userApi.getProfileImage(user.id);
+			shouldShowProfileImage = true;
+		} catch (e) {
+			console.log('User does not have a profile image');
+			shouldShowProfileImage = false;
 		}
 	};
 	const getFirstLetter = (text?: string) => {
@@ -46,11 +43,7 @@
 	};
 
 	const logOut = async () => {
-		const res = await fetch('auth/logout', { method: 'POST' });
-
-		if (res.status == 200 && res.statusText == 'OK') {
-			goto('/auth/login');
-		}
+		logoutUser().then(() => gotoLogin());
 	};
 </script>
 
@@ -99,7 +92,7 @@
 				>
 					{#if shouldShowProfileImage}
 						<img
-							src={`${serverEndpoint}/user/profile-image/${user.id}`}
+							src={`/api/user/profile-image/${user.id}`}
 							alt="profile-img"
 							class="inline rounded-full h-12 w-12 object-cover shadow-md"
 						/>
@@ -137,7 +130,7 @@
 				>
 					{#if shouldShowProfileImage}
 						<img
-							src={`${serverEndpoint}/user/profile-image/${user.id}`}
+							src={`/api/user/profile-image/${user.id}`}
 							alt="profile-img"
 							class="inline rounded-full h-20 w-20 object-cover shadow-md"
 						/>

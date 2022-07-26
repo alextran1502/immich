@@ -1,50 +1,21 @@
-<script context="module" lang="ts">
-	export const prerender = false;
-
-	import PlusBoxOutline from 'svelte-material-icons/PlusBoxOutline.svelte';
-
-	import NavigationBar from '$lib/components/shared-components/navigation-bar.svelte';
-	import { ImmichUser } from '$lib/models/immich-user';
-	import type { Load } from '@sveltejs/kit';
-	import SideBar from '$lib/components/shared-components/side-bar/side-bar.svelte';
-	import { AlbumResponseDto, api } from '@api';
-
-	export const load: Load = async ({ session }) => {
-		if (!session.user) {
-			return {
-				status: 302,
-				redirect: '/auth/login'
-			};
-		}
-
-		let albums: AlbumResponseDto[] = [];
-		try {
-			const { data } = await api.albumApi.getAllAlbums();
-			albums = data;
-		} catch (e) {
-			console.log('Error [getAllAlbums] ', e);
-		}
-
-		return {
-			status: 200,
-			props: {
-				user: session.user,
-				albums: albums
-			}
-		};
-	};
-</script>
-
 <script lang="ts">
 	import AlbumCard from '$lib/components/album-page/album-card.svelte';
 	import { goto } from '$app/navigation';
 	import { onMount } from 'svelte';
+	import PlusBoxOutline from 'svelte-material-icons/PlusBoxOutline.svelte';
+	import NavigationBar from '$lib/components/shared-components/navigation-bar.svelte';
+	import { ImmichUser } from '$lib/models/immich-user';
+	import SideBar from '$lib/components/shared-components/side-bar/side-bar.svelte';
+	import { AlbumResponseDto, api } from '@api';
+	import { checkUserAuthStatus, gotoLogin } from '$lib/user_auth';
+	import { session } from '$app/stores';
 	import ContextMenu from '$lib/components/shared-components/context-menu/context-menu.svelte';
 	import MenuOption from '$lib/components/shared-components/context-menu/menu-option.svelte';
 	import DeleteOutline from 'svelte-material-icons/DeleteOutline.svelte';
 
-	export let user: ImmichUser;
-	export let albums: AlbumResponseDto[];
+	let albums: AlbumResponseDto[] = [];
+
+	checkUserAuthStatus().catch(() => gotoLogin());
 
 	let isShowContextMenu = false;
 	let contextMenuPosition = { x: 0, y: 0 };
@@ -53,7 +24,6 @@
 	onMount(async () => {
 		const { data } = await api.albumApi.getAllAlbums();
 		albums = data;
-
 		// Delete album that has no photos and is named 'Untitled'
 		for (const album of albums) {
 			if (album.albumName === 'Untitled' && album.assets.length === 0) {
@@ -122,7 +92,9 @@
 </svelte:head>
 
 <section>
-	<NavigationBar {user} on:uploadClicked={() => {}} />
+	{#if $session.user}
+		<NavigationBar user={$session.user} on:uploadClicked={() => {}} />
+	{/if}
 </section>
 
 <section class="grid grid-cols-[250px_auto] relative pt-[72px] h-screen bg-immich-bg ">
@@ -161,19 +133,6 @@
 					{/key}
 				{/each}
 			</div>
-
-			<!-- Empty Message -->
-			{#if albums.length === 0}
-				<div
-					class="border p-5 w-[50%] m-auto mt-10 bg-gray-50 rounded-3xl flex flex-col place-content-center place-items-center"
-				>
-					<img src="/empty-1.svg" alt="Empty shared album" width="500" />
-
-					<p class="text-center text-immich-text-gray-500">
-						Create an album to organize your photos and videos
-					</p>
-				</div>
-			{/if}
 		</section>
 	</section>
 

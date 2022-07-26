@@ -1,33 +1,27 @@
-<script context="module" lang="ts">
-	export const prerender = false;
-
-	import type { Load } from '@sveltejs/kit';
+<script lang="ts">
+	import NavigationBar from '$lib/components/shared-components/navigation-bar.svelte';
+	import SideBar from '$lib/components/shared-components/side-bar/side-bar.svelte';
+	import PlusBoxOutline from 'svelte-material-icons/PlusBoxOutline.svelte';
+	import SharedAlbumListTile from '$lib/components/sharing-page/shared-album-list-tile.svelte';
+	import { session } from '$app/stores';
+	import { checkUserAuthStatus, gotoLogin } from '$lib/user_auth';
 	import { AlbumResponseDto, api, UserResponseDto } from '@api';
+	import { goto } from '$app/navigation';
 
-	export const load: Load = async ({ session }) => {
-		if (!session.user) {
-			return {
-				status: 302,
-				redirect: '/auth/login'
-			};
-		}
+	let sharedAlbums: AlbumResponseDto[] = [];
+	let user: UserResponseDto;
 
-		let sharedAlbums: AlbumResponseDto[] = [];
-		try {
-			const { data } = await api.albumApi.getAllAlbums(true);
-			sharedAlbums = data;
-		} catch (e) {
-			console.log('Error [getAllAlbums] ', e);
-		}
+	checkUserAuthStatus()
+		.then((authUser) => {
+			user = authUser;
+		})
+		.catch(() => {
+			gotoLogin();
+		});
 
-		return {
-			status: 200,
-			props: {
-				user: session.user,
-				sharedAlbums: sharedAlbums
-			}
-		};
-	};
+	api.albumApi.getAllAlbums(true).then((resp) => {
+		sharedAlbums = resp.data;
+	});
 
 	const createSharedAlbum = async () => {
 		try {
@@ -52,24 +46,14 @@
 	};
 </script>
 
-<script lang="ts">
-	import NavigationBar from '$lib/components/shared-components/navigation-bar.svelte';
-	import SideBar from '$lib/components/shared-components/side-bar/side-bar.svelte';
-	import PlusBoxOutline from 'svelte-material-icons/PlusBoxOutline.svelte';
-	import AlbumCard from '$lib/components/album-page/album-card.svelte';
-	import SharedAlbumListTile from '$lib/components/sharing-page/shared-album-list-tile.svelte';
-	import { goto } from '$app/navigation';
-
-	export let user: UserResponseDto;
-	export let sharedAlbums: AlbumResponseDto[];
-</script>
-
 <svelte:head>
 	<title>Albums - Immich</title>
 </svelte:head>
 
 <section>
-	<NavigationBar {user} on:uploadClicked={() => {}} />
+	{#if user}
+		<NavigationBar {user} on:uploadClicked={() => {}} />
+	{/if}
 </section>
 
 <section class="grid grid-cols-[250px_auto] relative pt-[72px] h-screen bg-immich-bg">
@@ -102,24 +86,14 @@
 
 			<!-- Share Album List -->
 			<div class="w-full flex flex-col place-items-center">
-				{#each sharedAlbums as album}
-					<a sveltekit:prefetch href={`albums/${album.id}`}>
-						<SharedAlbumListTile {album} {user} /></a
-					>
-				{/each}
+				{#if user}
+					{#each sharedAlbums as album}
+						<a sveltekit:prefetch href={`albums/${album.id}`}>
+							<SharedAlbumListTile {album} {user} />
+						</a>
+					{/each}
+				{/if}
 			</div>
-
-			<!-- Empty List -->
-			{#if sharedAlbums.length === 0}
-				<div
-					class="border p-5 w-[50%] m-auto mt-10 bg-gray-50 rounded-3xl flex flex-col place-content-center place-items-center"
-				>
-					<img src="/empty-2.svg" alt="Empty shared album" width="500" />
-					<p class="text-center text-immich-text-gray-500">
-						Create a shared album to share photos and videos with people in your network
-					</p>
-				</div>
-			{/if}
 		</section>
 	</section>
 </section>

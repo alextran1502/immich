@@ -1,22 +1,19 @@
 import { Socket, io } from 'socket.io-client';
 import { writable } from 'svelte/store';
-import { serverEndpoint } from '../constants';
 
 let websocket: Socket;
 
 export const openWebsocketConnection = (accessToken: string) => {
-	const websocketEndpoint = serverEndpoint.replace('/api', '');
-
 	try {
-		websocket = io(websocketEndpoint, {
+		websocket = io('/api', {
 			path: '/api/socket.io',
 			transports: ['polling'],
 			reconnection: true,
 			forceNew: true,
 			autoConnect: true,
 			extraHeaders: {
-				Authorization: 'Bearer ' + accessToken,
-			},
+				Authorization: 'Bearer ' + accessToken
+			}
 		});
 
 		listenToEvent(websocket);

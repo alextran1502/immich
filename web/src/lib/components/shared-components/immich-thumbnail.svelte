@@ -32,14 +32,12 @@
 	let videoAbortController: AbortController;
 
 	const loadImageData = async () => {
-		if ($session.user) {
-			const { data } = await api.assetApi.getAssetThumbnail(asset.id, format, {
-				responseType: 'blob'
-			});
-			if (data instanceof Blob) {
-				imageData = URL.createObjectURL(data);
-				return imageData;
-			}
+		const { data } = await api.assetApi.getAssetThumbnail(asset.id, format, {
+			responseType: 'blob'
+		});
+		if (data instanceof Blob) {
+			imageData = URL.createObjectURL(data);
+			return imageData;
 		}
 	};
 
